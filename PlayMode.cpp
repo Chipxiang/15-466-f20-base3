@@ -37,7 +37,7 @@ Load< Scene > hexapod_scene(LoadTagDefault, []() -> Scene const * {
 });
 
 Load< Sound::Sample > dusty_floor_sample(LoadTagDefault, []() -> Sound::Sample const * {
-	return new Sound::Sample(data_path("dusty-floor.opus"));
+	return new Sound::Sample(data_path("Organ-Filler.opus"));
 });
 
 PlayMode::PlayMode() : scene(*hexapod_scene) {
