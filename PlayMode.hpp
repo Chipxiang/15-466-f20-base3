@@ -44,8 +44,8 @@ struct PlayMode : Mode {
 
 	glm::vec3 get_leg_tip_position();
 	void randomize_grid();
-	//music coming from the tip of the leg (as a demonstration):
-	std::shared_ptr< Sound::PlayingSample > leg_tip_loop;
+	//music coming from the target:
+	std::shared_ptr< Sound::PlayingSample > target_loop;
 	
 	//camera:
 	Scene::Camera *camera = nullptr;
