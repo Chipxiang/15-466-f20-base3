@@ -48,13 +48,19 @@ PlayMode::PlayMode() : scene(*game_scene) {
 	if (player == nullptr) throw std::runtime_error("player not found.");
 
 	std::cout << player->position.x << "," << player->position.y << "," << player->position.z << std::endl;
+	std::cout << player->rotation.x << "," << player->rotation.y << "," << player->rotation.z << std::endl;
+
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
 	camera = &scene.cameras.front();
+	//camera->transform->position = glm::vec3(0, -7, 5);
+	//camera->transform-> parent = player;
+	std::cout << camera->transform->position.x << "," << camera->transform->position.y << "," << camera->transform->position.z << std::endl;
+	std::cout << camera->transform->rotation.x << "," << camera->transform->rotation.y << "," << camera->transform->rotation.z << std::endl;
 
 	//start music loop playing:
 	// (note: position will be over-ridden in update())
-	//leg_tip_loop = Sound::loop_3D(*dusty_floor_sample, 1.0f, get_leg_tip_position(), 10.0f);
+	target_loop = Sound::loop_3D(*organ_filler_sample, 1.0f, glm::vec3(10,10,0), 10.0f);
 	randomize_grid();
 
 	for (int i = 0; i < GRID_SIZE; i++) {
@@ -144,12 +150,15 @@ void PlayMode::update(float elapsed) {
 		if (down.pressed && !up.pressed) move.y =-1.0f;
 		if (!down.pressed && up.pressed) move.y = 1.0f;
 
-		if (move != glm::vec3(0.0f))
-			player->rotation = glm::quatLookAt(-glm::normalize(move), glm::vec3(0,0,1));
+		if (move != glm::vec3(0.0f)) {
+			player->rotation = glm::quatLookAt(-glm::normalize(move), glm::vec3(0, 0, 1));
+			move = glm::normalize(move) * PlayerSpeed * elapsed;
+			player->position += move;
+			camera->transform->position += move;
+		}
 
 		//make it so that moving diagonally doesn't go faster:
-		if (move != glm::vec3(0.0f)) move = glm::normalize(move) * PlayerSpeed * elapsed;
-		player->position += move;
+
 		/*
 		glm::mat4x3 frame = camera->transform->make_local_to_parent();
 		glm::vec3 right = frame[0];
@@ -159,11 +168,17 @@ void PlayMode::update(float elapsed) {
 		camera->transform->position += move.x * right + move.y * forward;*/
 	}
 
-	{ //update listener to camera position:
+	/*{ //update listener to camera position:
 		glm::mat4x3 frame = camera->transform->make_local_to_parent();
 		glm::vec3 right = frame[0];
 		glm::vec3 at = frame[3];
 		Sound::listener.set_position_right(at, right, 1.0f / 60.0f);
+	}*/
+	{
+		glm::mat4x3 frame = camera->transform->make_local_to_parent();
+		glm::vec3 right = frame[0];
+		Sound::listener.set_position_right(player->position, right, 1.0f / 1000.0f);
+
 	}
 
 	//reset button press counters:
