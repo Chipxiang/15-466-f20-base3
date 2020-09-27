@@ -178,10 +178,10 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	glUseProgram(lit_color_texture_program->program);
 	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 2);
-	glUniform3fv(lit_color_texture_program->LIGHT_LOCATION_vec3, 1, glm::value_ptr((glm::vec3(0.0f,0.0f, 10.0f))*0.9f));
+	glUniform3fv(lit_color_texture_program->LIGHT_LOCATION_vec3, 1, glm::value_ptr(player->position + (glm::vec3(0.0f,0.0f, 10.0f))));
 	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f, -1.0f)));
-	glUniform1f(lit_color_texture_program->LIGHT_CUTOFF_float, std::cos(3.1415926f * 0.125f));
-	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(500.0f * glm::vec3(1.0f, 1.0f, 0.95f)));
+	glUniform1f(lit_color_texture_program->LIGHT_CUTOFF_float, std::cos(3.1415926f * 0.025f));
+	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(50.0f * glm::vec3(1.0f, 1.0f, 0.95f)));
 	glUseProgram(0);
 	
 	/*glUseProgram(lit_color_texture_program->program);
