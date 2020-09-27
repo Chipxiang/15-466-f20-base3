@@ -62,9 +62,17 @@ PlayMode::PlayMode() : scene(*hexapod_scene) {
 	//start music loop playing:
 	// (note: position will be over-ridden in update())
 	leg_tip_loop = Sound::loop_3D(*dusty_floor_sample, 1.0f, get_leg_tip_position(), 10.0f);
-}
+	randomize_grid();
 
+	for (int i = 0; i < GRID_SIZE; i++) {
+		for (int j = 0; j < GRID_SIZE; j++) {
+			std::cout << grid[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+}
 PlayMode::~PlayMode() {
+	
 }
 
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
@@ -197,7 +205,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glUniform3fv(lit_color_texture_program->LIGHT_LOCATION_vec3, 1, glm::value_ptr((get_leg_tip_position() + glm::vec3(0.0f,0.0f, 10.0f))*0.9f));
 	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f, -1.0f)));
 	glUniform1f(lit_color_texture_program->LIGHT_CUTOFF_float, std::cos(3.1415926f * 0.125f));
-	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(100.0f * glm::vec3(1.0f, 1.0f, 0.95f)));
+	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(500.0f * glm::vec3(1.0f, 1.0f, 0.95f)));
 	glUseProgram(0);
 	
 	/*glUseProgram(lit_color_texture_program->program);
@@ -242,4 +250,53 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 glm::vec3 PlayMode::get_leg_tip_position() {
 	//the vertex position here was read from the model in blender:
 	return lower_leg->make_local_to_world() * glm::vec4(-1.26137f, -11.861f, 0.0f, 1.0f);
+}
+
+void PlayMode::randomize_grid()
+{
+	for (int i = 0; i < GRID_SIZE; i++) {
+		for (int j = 0; j < GRID_SIZE; j++) {
+			grid[i][j] = false;
+		}
+	}
+	std::random_device rd;
+	std::mt19937 mt(rd());
+	std::uniform_int_distribution<int> start_rand(0, GRID_SIZE - 1);
+	std::uniform_int_distribution<int> direction_rand(0, 2);
+	start = start_rand(mt);
+	grid[0][start] = true;
+	int curr_x = 0;
+	int curr_y = start;
+	while (curr_x != GRID_SIZE - 1) {
+		int direction = direction_rand(mt);
+		switch (direction) {
+		case 0:
+			curr_x += 1;
+			break;
+		case 1:
+			if (curr_y - 1 < 0) {
+				continue;
+			}
+			if (!grid[curr_x][curr_y - 1]) {
+				curr_y--;
+				break;
+			}
+		case 2:
+			if (curr_y + 1 >= GRID_SIZE) {
+				continue;
+			}
+			if (!grid[curr_x][curr_y + 1]) {
+				curr_y++;
+				break;
+			}
+		default:
+			curr_x++;
+			break;
+		}
+		grid[curr_x][curr_y] = true;
+	}
+	grid[curr_x][curr_y] = true;
+	end = curr_y;
+
+
 }

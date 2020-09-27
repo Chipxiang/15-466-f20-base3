@@ -18,7 +18,10 @@ struct PlayMode : Mode {
 	virtual void draw(glm::uvec2 const &drawable_size) override;
 
 	//----- game state -----
-
+	static const int GRID_SIZE = 16;
+	bool grid[GRID_SIZE][GRID_SIZE] = {false};
+	int start = 0;
+	int end = 0;
 	//input tracking:
 	struct Button {
 		uint8_t downs = 0;
@@ -36,9 +39,9 @@ struct PlayMode : Mode {
 	glm::quat upper_leg_base_rotation;
 	glm::quat lower_leg_base_rotation;
 	float wobble = 0.0f;
-
+	
 	glm::vec3 get_leg_tip_position();
-
+	void randomize_grid();
 	//music coming from the tip of the leg (as a demonstration):
 	std::shared_ptr< Sound::PlayingSample > leg_tip_loop;
 	
