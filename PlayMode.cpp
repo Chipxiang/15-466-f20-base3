@@ -191,11 +191,20 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//set up light type and position for lit_color_texture_program:
 	// TODO: consider using the Light(s) in the scene to do this
+
 	glUseProgram(lit_color_texture_program->program);
+	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 2);
+	glUniform3fv(lit_color_texture_program->LIGHT_LOCATION_vec3, 1, glm::value_ptr((get_leg_tip_position() + glm::vec3(0.0f,0.0f, 10.0f))*0.9f));
+	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f, -1.0f)));
+	glUniform1f(lit_color_texture_program->LIGHT_CUTOFF_float, std::cos(3.1415926f * 0.125f));
+	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(100.0f * glm::vec3(1.0f, 1.0f, 0.95f)));
+	glUseProgram(0);
+	
+	/*glUseProgram(lit_color_texture_program->program);
 	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
 	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
 	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
-	glUseProgram(0);
+	glUseProgram(0);*/
 
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
