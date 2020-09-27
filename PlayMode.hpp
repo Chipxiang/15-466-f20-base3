@@ -37,6 +37,8 @@ struct PlayMode : Mode {
 	glm::quat lower_leg_base_rotation;
 	float wobble = 0.0f;
 
+	Scene::Transform *player = nullptr;
+
 	glm::vec3 get_leg_tip_position();
 
 	//music coming from the tip of the leg (as a demonstration):
