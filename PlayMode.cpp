@@ -51,9 +51,13 @@ PlayMode::PlayMode() : scene(*game_scene) {
 		}
 	}
 	if (player == nullptr) throw std::runtime_error("player not found.");
-
+	randomize_grid();
+	
 	std::cout << player->position.x << "," << player->position.y << "," << player->position.z << std::endl;
 	std::cout << player->rotation.x << "," << player->rotation.y << "," << player->rotation.z << std::endl;
+
+	player->position.x += path[0].x * UNIT_SIZE;
+	player->position.y += path[0].y * UNIT_SIZE;
 
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
@@ -63,10 +67,11 @@ PlayMode::PlayMode() : scene(*game_scene) {
 	std::cout << camera->transform->position.x << "," << camera->transform->position.y << "," << camera->transform->position.z << std::endl;
 	std::cout << camera->transform->rotation.x << "," << camera->transform->rotation.y << "," << camera->transform->rotation.z << std::endl;
 
+	camera->transform->position.x += path[0].x * UNIT_SIZE;
+	camera->transform->position.y += path[0].y * UNIT_SIZE;
 	//start music loop playing:
 	// (note: position will be over-ridden in update())
-	target_loop = Sound::loop_3D(*organ_filler_sample, 1.0f, glm::vec3(10,10,0), 10.0f);
-	randomize_grid();
+	target_loop = Sound::loop_3D(*organ_filler_sample, 1.0f, glm::vec3(path[1].x * UNIT_SIZE, path[1].y * UNIT_SIZE,0), 1.0f);
 
 	for (int i = 0; i < GRID_SIZE; i++) {
 		for (int j = 0; j < GRID_SIZE; j++) {
@@ -195,7 +200,7 @@ void PlayMode::update(float elapsed) {
 	{
 		glm::mat4x3 frame = camera->transform->make_local_to_parent();
 		glm::vec3 right = frame[0];
-		Sound::listener.set_position_right(player->position, right, 1.0f / 1000.0f);
+		Sound::listener.set_position_right(player->position, right, 1.0f / 60.0f );
 
 	}
 
@@ -280,6 +285,8 @@ void PlayMode::randomize_grid()
 	grid[0][start] = true;
 	int curr_x = 0;
 	int curr_y = start;
+	path.clear();
+	path.push_back(glm::vec2(curr_x, curr_y));
 	while (curr_x != GRID_SIZE - 1) {
 		int direction = direction_rand(mt);
 		switch (direction) {
@@ -307,6 +314,7 @@ void PlayMode::randomize_grid()
 			break;
 		}
 		grid[curr_x][curr_y] = true;
+		path.push_back(glm::vec2(curr_x, curr_y));
 	}
 	grid[curr_x][curr_y] = true;
 	end = curr_y;

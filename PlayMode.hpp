@@ -21,6 +21,7 @@ struct PlayMode : Mode {
 
 	//----- game state -----
 	static const int GRID_SIZE = 16;
+	static const int UNIT_SIZE = 2;
 	bool grid[GRID_SIZE][GRID_SIZE] = {false};
 	int start = 0;
 	int end = 0;
@@ -41,14 +42,16 @@ struct PlayMode : Mode {
 	glm::quat upper_leg_base_rotation;
 	glm::quat lower_leg_base_rotation;
 	float wobble = 0.0f;
-
+	
 	Scene::Transform *player = nullptr;
 	std::vector<Scene::Transform*> cube_vec;
 
 	int player_pos = 0;
 
+	glm::vec3 target_position;
 	glm::vec3 get_leg_tip_position();
 	void randomize_grid();
+	std::vector<glm::vec2> path;
 	//music coming from the target:
 	std::shared_ptr< Sound::PlayingSample > target_loop;
 	
