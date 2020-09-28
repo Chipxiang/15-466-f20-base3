@@ -71,7 +71,8 @@ PlayMode::PlayMode() : scene(*game_scene) {
 	camera->transform->position.y += path[0].y * UNIT_SIZE;
 	//start music loop playing:
 	// (note: position will be over-ridden in update())
-	target_loop = Sound::loop_3D(*organ_filler_sample, 1.0f, glm::vec3(path[1].x * UNIT_SIZE, path[1].y * UNIT_SIZE,0), 1.0f);
+	target_position = path[1];
+	target_loop = Sound::loop_3D(*organ_filler_sample, 1.0f, glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE,0), 1.0f);
 
 	for (int i = GRID_SIZE - 1; i > 0; i--) {
 		for (int j = 0; j < GRID_SIZE; j++) {
@@ -175,7 +176,6 @@ void PlayMode::update(float elapsed) {
 		}
 
 		check_player_pos(player->position.x, player->position.y);
-
 		//make it so that moving diagonally doesn't go faster:
 
 		/*
