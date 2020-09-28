@@ -42,8 +42,13 @@ Load< Sound::Sample > organ_filler_sample(LoadTagDefault, []() -> Sound::Sample 
 
 PlayMode::PlayMode() : scene(*game_scene) {
 	//get pointers to player for convenience:
+	std::string cube_prefix = "Cube";
 	for (auto &transform : scene.transforms) {
 		if (transform.name == "player") player = &transform;
+		if (transform.name.find(cube_prefix) == 0){
+			std::cout<<"find cube "<<transform.name<<std::endl;
+			cube_vec.push_back(&transform);
+		}
 	}
 	if (player == nullptr) throw std::runtime_error("player not found.");
 
@@ -134,6 +139,13 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	return false;
 }
 
+int check_player_pos(float x, float y){
+	int cord_x = int(floor((x+1)/2));
+	int cord_y = int(floor((y+1)/2)); 
+	int idx = cord_x+cord_y*16;
+	return idx;
+}
+
 void PlayMode::update(float elapsed) {
 
 	// //move sound to follow leg tip position:
@@ -155,6 +167,12 @@ void PlayMode::update(float elapsed) {
 			move = glm::normalize(move) * PlayerSpeed * elapsed;
 			player->position += move;
 			camera->transform->position += move;
+		}
+
+		int new_pos = check_player_pos(player->position.x, player->position.y);
+		if (new_pos != player_pos){
+			std::cout<<"new pos "<<new_pos<<std::endl;
+			player_pos = new_pos;
 		}
 
 		//make it so that moving diagonally doesn't go faster:
@@ -197,7 +215,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	glUseProgram(lit_color_texture_program->program);
 	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 2);
-	glUniform3fv(lit_color_texture_program->LIGHT_LOCATION_vec3, 1, glm::value_ptr(player->position + (glm::vec3(0.0f,0.0f, 10.0f))));
+	glUniform3fv(lit_color_texture_program->LIGHT_LOCATION_vec3, 1, glm::value_ptr(player->position + (glm::vec3(0.0f,0.0f, 10.f))));
 	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f, -1.0f)));
 	glUniform1f(lit_color_texture_program->LIGHT_CUTOFF_float, std::cos(3.1415926f * 0.025f));
 	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(50.0f * glm::vec3(1.0f, 1.0f, 0.95f)));

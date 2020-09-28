@@ -4,9 +4,11 @@
 #include "Sound.hpp"
 
 #include <glm/glm.hpp>
+#include <math.h>
 
 #include <vector>
 #include <deque>
+#include <string>
 
 struct PlayMode : Mode {
 	PlayMode();
@@ -41,6 +43,9 @@ struct PlayMode : Mode {
 	float wobble = 0.0f;
 
 	Scene::Transform *player = nullptr;
+	std::vector<Scene::Transform*> cube_vec;
+
+	int player_pos = 0;
 
 	glm::vec3 get_leg_tip_position();
 	void randomize_grid();
