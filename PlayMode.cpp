@@ -73,9 +73,9 @@ PlayMode::PlayMode() : scene(*game_scene) {
 	// (note: position will be over-ridden in update())
 	target_loop = Sound::loop_3D(*organ_filler_sample, 1.0f, glm::vec3(path[1].x * UNIT_SIZE, path[1].y * UNIT_SIZE,0), 1.0f);
 
-	for (int i = 0; i < GRID_SIZE; i++) {
+	for (int i = GRID_SIZE - 1; i > 0; i--) {
 		for (int j = 0; j < GRID_SIZE; j++) {
-			std::cout << grid[i][j] << " ";
+			std::cout << grid[j][i] << " ";
 		}
 		std::cout << std::endl;
 	}
@@ -176,7 +176,7 @@ void PlayMode::update(float elapsed) {
 
 		int new_pos = check_player_pos(player->position.x, player->position.y);
 		if (new_pos != player_pos){
-			std::cout<<"new pos "<<new_pos<<std::endl;
+			// std::cout<<"new pos "<<new_pos<<std::endl;
 			player_pos = new_pos;
 		}
 
