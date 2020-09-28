@@ -144,11 +144,11 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	return false;
 }
 
-int check_player_pos(float x, float y){
+void PlayMode::check_player_pos(float x, float y){
 	int cord_x = int(floor((x+1)/2));
 	int cord_y = int(floor((y+1)/2)); 
-	int idx = cord_x+cord_y*16;
-	return idx;
+	player_pos = cord_x+cord_y*16;
+	player_pos_2d = glm::ivec2(cord_x,cord_y);
 }
 
 void PlayMode::update(float elapsed) {
@@ -174,11 +174,7 @@ void PlayMode::update(float elapsed) {
 			camera->transform->position += move;
 		}
 
-		int new_pos = check_player_pos(player->position.x, player->position.y);
-		if (new_pos != player_pos){
-			std::cout<<"new pos "<<new_pos<<std::endl;
-			player_pos = new_pos;
-		}
+		check_player_pos(player->position.x, player->position.y);
 
 		//make it so that moving diagonally doesn't go faster:
 
