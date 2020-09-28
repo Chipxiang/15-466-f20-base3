@@ -59,9 +59,10 @@ PlayMode::PlayMode() : scene(*game_scene) {
 	check_player_pos(player->position.x, player->position.y);
 	std::cout << player->position.x << "," << player->position.y << "," << player->position.z << std::endl;
 	std::cout << player->rotation.x << "," << player->rotation.y << "," << player->rotation.z << std::endl;
-
-	player->position.x += path[0].x * UNIT_SIZE;
-	player->position.y += path[0].y * UNIT_SIZE;
+	glm::ivec2 initial_player_pos = path.front();
+	path.pop_front();
+	player->position.x += initial_player_pos.x * UNIT_SIZE;
+	player->position.y += initial_player_pos.y * UNIT_SIZE;
 
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
@@ -71,13 +72,14 @@ PlayMode::PlayMode() : scene(*game_scene) {
 	std::cout << camera->transform->position.x << "," << camera->transform->position.y << "," << camera->transform->position.z << std::endl;
 	std::cout << camera->transform->rotation.x << "," << camera->transform->rotation.y << "," << camera->transform->rotation.z << std::endl;
 
-	camera->transform->position.x += path[0].x * UNIT_SIZE;
-	camera->transform->position.y += path[0].y * UNIT_SIZE;
+	camera->transform->position.x += initial_player_pos.x * UNIT_SIZE;
+	camera->transform->position.y += initial_player_pos.y * UNIT_SIZE;
 	//start music loop playing:
 	// (note: position will be over-ridden in update())
-	target_position = path[1];
-	target_loop = Sound::loop_3D(*organ_filler_sample, 1.0f, glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE,0), 1.0f);
-
+	target_position = path.front();
+	path.pop_front();
+	target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE, 0);
+	target_loop = Sound::loop_3D(*organ_filler_sample, 1.0f, target->position, 1.0f);
 	for (int i = GRID_SIZE - 1; i > 0; i--) {
 		for (int j = 0; j < GRID_SIZE; j++) {
 			std::cout << grid[j][i] << " ";
@@ -180,6 +182,12 @@ void PlayMode::update(float elapsed) {
 		}
 
 		check_player_pos(player->position.x, player->position.y);
+		if (player_pos_2d == target_position) {
+			target_position = path.front();
+			path.pop_front();
+			target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE, 0);
+			target_loop->set_position(target->position);
+		}
 		//make it so that moving diagonally doesn't go faster:
 
 		/*
@@ -218,19 +226,19 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	//set up light type and position for lit_color_texture_program:
 	// TODO: consider using the Light(s) in the scene to do this
 
-	glUseProgram(lit_color_texture_program->program);
+	/*glUseProgram(lit_color_texture_program->program);
 	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 2);
 	glUniform3fv(lit_color_texture_program->LIGHT_LOCATION_vec3, 1, glm::value_ptr(player->position + (glm::vec3(0.0f,0.0f, 10.f))));
 	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f, -1.0f)));
 	glUniform1f(lit_color_texture_program->LIGHT_CUTOFF_float, std::cos(3.1415926f * 0.025f));
 	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(50.0f * glm::vec3(1.0f, 1.0f, 0.95f)));
-	glUseProgram(0);
+	glUseProgram(0);*/
 	
-	/*glUseProgram(lit_color_texture_program->program);
+	glUseProgram(lit_color_texture_program->program);
 	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
 	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
 	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
-	glUseProgram(0);*/
+	glUseProgram(0);
 
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.

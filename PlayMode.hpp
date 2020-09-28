@@ -54,7 +54,7 @@ struct PlayMode : Mode {
 	glm::ivec2 target_position;
 	glm::vec3 get_leg_tip_position();
 	void randomize_grid();
-	std::vector<glm::ivec2> path;
+	std::deque<glm::ivec2> path;
 	//music coming from the target:
 	std::shared_ptr< Sound::PlayingSample > target_loop;
 	
