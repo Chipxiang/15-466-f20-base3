@@ -45,14 +45,18 @@ PlayMode::PlayMode() : scene(*game_scene) {
 	std::string cube_prefix = "Cube";
 	for (auto &transform : scene.transforms) {
 		if (transform.name == "player") player = &transform;
-		if (transform.name.find(cube_prefix) == 0){
+		else if (transform.name.find(cube_prefix) == 0){
 			std::cout<<"find cube "<<transform.name<<std::endl;
 			cube_vec.push_back(&transform);
 		}
+		else if (transform.name == "target"){
+			target = &transform;
+		}
 	}
 	if (player == nullptr) throw std::runtime_error("player not found.");
+	if (target == nullptr) throw std::runtime_error("target not found.");
 	randomize_grid();
-	
+	check_player_pos(player->position.x, player->position.y);
 	std::cout << player->position.x << "," << player->position.y << "," << player->position.z << std::endl;
 	std::cout << player->rotation.x << "," << player->rotation.y << "," << player->rotation.z << std::endl;
 

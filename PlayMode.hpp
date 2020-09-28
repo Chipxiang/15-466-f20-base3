@@ -45,6 +45,7 @@ struct PlayMode : Mode {
 	float wobble = 0.0f;
 	
 	Scene::Transform *player = nullptr;
+	Scene::Transform *target = nullptr;
 	std::vector<Scene::Transform*> cube_vec;
 
 	int player_pos = 0;
