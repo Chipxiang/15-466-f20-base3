@@ -18,6 +18,7 @@ struct PlayMode : Mode {
 	virtual bool handle_event(SDL_Event const &, glm::uvec2 const &window_size) override;
 	virtual void update(float elapsed) override;
 	virtual void draw(glm::uvec2 const &drawable_size) override;
+	virtual void check_player_pos(float x, float y);
 
 	//----- game state -----
 	static const int GRID_SIZE = 16;
@@ -47,6 +48,7 @@ struct PlayMode : Mode {
 	std::vector<Scene::Transform*> cube_vec;
 
 	int player_pos = 0;
+	glm::ivec2 player_pos_2d = glm::ivec2(0,0);
 
 	glm::vec3 target_position;
 	glm::vec3 get_leg_tip_position();
