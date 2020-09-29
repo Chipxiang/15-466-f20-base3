@@ -172,7 +172,6 @@ void PlayMode::update(float elapsed) {
 		check_player_pos(player->position.x, player->position.y);
 
 		if (player_pos_2d == target_position) {
-		
 			if (path.size() == 0){
 				ending_timer += elapsed;
 				if(glm::length(player->position - target->position) < 0.6f)
@@ -185,7 +184,7 @@ void PlayMode::update(float elapsed) {
 				cutoff += elapsed / 4;
 				if(color < 0.9f)
 					color += elapsed / 4;
-				if (ending_timer > 3){
+				if (ending_timer > 5){
 					reset_game(false);
 				}
 			}else{
@@ -256,7 +255,8 @@ void PlayMode::reset_game(bool ending){
 		grace_time = 2.0f;
 		score = 0;
 	}else{
-		grace_time -= 0.5;
+		if (grace_time > 0.5)
+			grace_time -= 0.5;
 		stop_move = false;
 	}
 
