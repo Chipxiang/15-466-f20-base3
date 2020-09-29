@@ -85,7 +85,7 @@ PlayMode::PlayMode() : scene(*game_scene) {
 	target->rotation = glm::quatLookAt(-glm::normalize(glm::vec3(-1,-1,0)), glm::vec3(0, 0, 1));
 
 	path.pop_front();
-	target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE, 0);
+	target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE - 0.2f, 0);
 	target_loop = Sound::loop_3D(*organ_filler_sample, 1.0f, target->position, 1.0f);
 	for (int i = GRID_SIZE - 1; i > 0; i--) {
 		for (int j = 0; j < GRID_SIZE; j++) {
@@ -191,7 +191,7 @@ void PlayMode::update(float elapsed) {
 				score ++;
 				target_position = path.front();
 				path.pop_front();
-				target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE, 0);
+				target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE - 0.2f, 0);
 				target_loop->set_position(target->position);
 			}
 		}
@@ -245,9 +245,9 @@ void PlayMode::reset_game(bool ending){
 	camera->transform->position.y = camera_origin_pos.y+initial_player_pos.y * UNIT_SIZE;
 	target_position = path.front();
 	path.pop_front();
-	target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE, 0);
+	target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE - 0.2f, 0);
 	target_loop = Sound::loop_3D(*organ_filler_sample, 1.0f, target->position, 1.0f);
-
+	ending_timer = 0;
 	if(ending){
 		wrong_cube->position.z = -1.0f;
 		stop_move = false;

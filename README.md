@@ -15,6 +15,8 @@ How To Play:
 
 Move in the grids with WASD keys. Follow the direction of music played by the ice cream truck. 
 
+The target sound position moves to the next cell every time you reached a new cell on the path.
+
 Staying on a wrong cell that is not on the path of ice cream truck will make you fall.
 
 Difficulties increases after each time you get to the target as you can stay for less time on the wrong cell before falling.
