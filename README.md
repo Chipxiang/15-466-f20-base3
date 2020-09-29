@@ -5,6 +5,8 @@ Author: Jianxiang Li, Zizhuo Lin
 Design: 
 Follow the direction of sound in the darkness to complete a path towards the ice cream truck. Randomized unique path every game.
 
+Midnight treats are dangerous not only because it might let you gain unnecessary weight!
+
 Screen Shot:
 
 ![Screen Shot](screenshot.png)
