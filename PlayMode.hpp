@@ -19,6 +19,7 @@ struct PlayMode : Mode {
 	virtual void update(float elapsed) override;
 	virtual void draw(glm::uvec2 const &drawable_size) override;
 	virtual void check_player_pos(float x, float y);
+	virtual void reset_game(bool ending);
 
 	//----- game state -----
 	static const int GRID_SIZE = 16;
@@ -51,9 +52,11 @@ struct PlayMode : Mode {
 
 	int player_pos = 0;
 	glm::ivec2 player_pos_2d = glm::ivec2(0,0);
-	glm::ivec2 player_pos_last = glm::ivec2(0,0);
-	bool wrong_pos = false;
+	bool stop_move = false;
 	float wrong_timer = 0.0f;
+	float grace_time = 2.0f;
+	int score = 0;
+	float ending_timer = 0.0f;
 
 	glm::ivec2 target_position;
 	glm::vec3 get_leg_tip_position();

@@ -63,7 +63,6 @@ PlayMode::PlayMode() : scene(*game_scene) {
 	player->position.x += initial_player_pos.x * UNIT_SIZE;
 	player->position.y += initial_player_pos.y * UNIT_SIZE;
 	check_player_pos(player->position.x, player->position.y);
-	player_pos_last = player_pos_2d;
 
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
@@ -130,24 +129,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			down.pressed = false;
 			return true;
 		}
-	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
-		if (SDL_GetRelativeMouseMode() == SDL_FALSE) {
-			SDL_SetRelativeMouseMode(SDL_TRUE);
-			return true;
-		}
-	} else if (evt.type == SDL_MOUSEMOTION) {
-		if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
-			glm::vec2 motion = glm::vec2(
-				evt.motion.xrel / float(window_size.y),
-				-evt.motion.yrel / float(window_size.y)
-			);
-			camera->transform->rotation = glm::normalize(
-				camera->transform->rotation
-				* glm::angleAxis(-motion.x * camera->fovy, glm::vec3(0.0f, 1.0f, 0.0f))
-				* glm::angleAxis(motion.y * camera->fovy, glm::vec3(1.0f, 0.0f, 0.0f))
-			);
-			return true;
-		}
 	}
 
 	return false;
@@ -169,7 +150,7 @@ void PlayMode::update(float elapsed) {
 	{
 
 		//combine inputs into a move:
-		if (!wrong_pos){
+		if (!stop_move){
 			constexpr float PlayerSpeed = 3.0f;
 			glm::vec3 move = glm::vec3(0.0f);
 			if (left.pressed && !right.pressed) move.x =-1.0f;
@@ -188,54 +169,40 @@ void PlayMode::update(float elapsed) {
 		check_player_pos(player->position.x, player->position.y);
 
 		if (player_pos_2d == target_position) {
-			player_pos_last = target_position;
-			target_position = path.front();
-			path.pop_front();
-			target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE, 0);
-			target_loop->set_position(target->position);
+			if (path.size() == 0){
+				ending_timer += elapsed;
+				stop_move = true;
+				if (ending_timer > 2){
+					reset_game(false);
+				}
+			}else{
+				score ++;
+				target_position = path.front();
+				path.pop_front();
+				target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE, 0);
+				target_loop->set_position(target->position);
+			}
 		}
 		
 		if (grid[player_pos_2d.x][player_pos_2d.y] == 0){
 			//went wrong direction
 			wrong_timer += elapsed;
-			if (wrong_timer > 3.5){
+			if (wrong_timer > grace_time+1.5){
 				//reset game
-				randomize_grid();
-				glm::ivec2 initial_player_pos = path.front();
-				path.pop_front();
-				player->position.x = (float)initial_player_pos.x * UNIT_SIZE;
-				player->position.y = (float)initial_player_pos.y * UNIT_SIZE;
-				player->position.z = 0.0f;
-				check_player_pos(player->position.x, player->position.y);
-				player_pos_last = player_pos_2d;
-				camera->transform->position.x = camera_origin_pos.x+initial_player_pos.x * UNIT_SIZE;
-				camera->transform->position.y = camera_origin_pos.y+initial_player_pos.y * UNIT_SIZE;
-				target_position = path.front();
-				path.pop_front();
-				target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE, 0);
-				wrong_cube->position.z = -1.0f;
-				wrong_pos = false;
-				wrong_timer = 0.0f;
-			}else if (wrong_timer > 2){
+				reset_game(true);
+			}else if (wrong_timer > grace_time){
 				//falling down
 				float FallSpeed = 9.8f*(wrong_timer-2.0f);
-				wrong_pos = true;
+				stop_move = true;
 				wrong_cube = cube_vec[player_pos];
 				wrong_cube->position += FallSpeed*glm::vec3(0.0f, 0.0f, -1.0f)*elapsed;
 				player->position += FallSpeed*glm::vec3(0.0f, 0.0f, -1.0f)*elapsed;
 			}
 		}else{
-			wrong_pos = false;
+			stop_move = false;
 			wrong_timer = 0.0f;
 		}
 	}
-
-	/*{ //update listener to camera position:
-		glm::mat4x3 frame = camera->transform->make_local_to_parent();
-		glm::vec3 right = frame[0];
-		glm::vec3 at = frame[3];
-		Sound::listener.set_position_right(at, right, 1.0f / 60.0f);
-	}*/
 	{
 		glm::mat4x3 frame = camera->transform->make_local_to_parent();
 		glm::vec3 right = frame[0];
@@ -248,6 +215,32 @@ void PlayMode::update(float elapsed) {
 	right.downs = 0;
 	up.downs = 0;
 	down.downs = 0;
+}
+
+void PlayMode::reset_game(bool ending){
+	randomize_grid();
+	glm::ivec2 initial_player_pos = path.front();
+	path.pop_front();
+	player->position.x = (float)initial_player_pos.x * UNIT_SIZE;
+	player->position.y = (float)initial_player_pos.y * UNIT_SIZE;
+	player->position.z = 0.0f;
+	check_player_pos(player->position.x, player->position.y);
+	camera->transform->position.x = camera_origin_pos.x+initial_player_pos.x * UNIT_SIZE;
+	camera->transform->position.y = camera_origin_pos.y+initial_player_pos.y * UNIT_SIZE;
+	target_position = path.front();
+	path.pop_front();
+	target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE, 0);
+	if(ending){
+		wrong_cube->position.z = -1.0f;
+		stop_move = false;
+		wrong_timer = 0.0f;
+		grace_time = 2.0f;
+		score = 0;
+	}else{
+		grace_time -= 0.5;
+		stop_move = false;
+	}
+
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
@@ -291,12 +284,12 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		));
 
 		constexpr float H = 0.09f;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse",
+		lines.draw_text("WASD moves       Score: "+std::to_string(score),
 			glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
 		float ofs = 2.0f / drawable_size.y;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse",
+		lines.draw_text("WASD moves       Score: "+std::to_string(score),
 			glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 0.1f * H + ofs, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0xff, 0xff, 0xff, 0x00));
