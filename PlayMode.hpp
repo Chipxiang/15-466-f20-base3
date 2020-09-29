@@ -47,9 +47,13 @@ struct PlayMode : Mode {
 	Scene::Transform *player = nullptr;
 	Scene::Transform *target = nullptr;
 	std::vector<Scene::Transform*> cube_vec;
+	Scene::Transform *wrong_cube = nullptr;
 
 	int player_pos = 0;
 	glm::ivec2 player_pos_2d = glm::ivec2(0,0);
+	glm::ivec2 player_pos_last = glm::ivec2(0,0);
+	bool wrong_pos = false;
+	float wrong_timer = 0.0f;
 
 	glm::ivec2 target_position;
 	glm::vec3 get_leg_tip_position();
@@ -60,5 +64,6 @@ struct PlayMode : Mode {
 	
 	//camera:
 	Scene::Camera *camera = nullptr;
+	glm::vec3 camera_origin_pos = glm::vec3(0.0f,0.0f,0.0f);
 
 };

@@ -56,17 +56,19 @@ PlayMode::PlayMode() : scene(*game_scene) {
 	if (player == nullptr) throw std::runtime_error("player not found.");
 	if (target == nullptr) throw std::runtime_error("target not found.");
 	randomize_grid();
-	check_player_pos(player->position.x, player->position.y);
 	std::cout << player->position.x << "," << player->position.y << "," << player->position.z << std::endl;
 	std::cout << player->rotation.x << "," << player->rotation.y << "," << player->rotation.z << std::endl;
 	glm::ivec2 initial_player_pos = path.front();
 	path.pop_front();
 	player->position.x += initial_player_pos.x * UNIT_SIZE;
 	player->position.y += initial_player_pos.y * UNIT_SIZE;
+	check_player_pos(player->position.x, player->position.y);
+	player_pos_last = player_pos_2d;
 
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
 	camera = &scene.cameras.front();
+	camera_origin_pos = camera->transform->position;
 	//camera->transform->position = glm::vec3(0, -7, 5);
 	//camera->transform-> parent = player;
 	std::cout << camera->transform->position.x << "," << camera->transform->position.y << "," << camera->transform->position.z << std::endl;
@@ -167,36 +169,66 @@ void PlayMode::update(float elapsed) {
 	{
 
 		//combine inputs into a move:
-		constexpr float PlayerSpeed = 3.0f;
-		glm::vec3 move = glm::vec3(0.0f);
-		if (left.pressed && !right.pressed) move.x =-1.0f;
-		if (!left.pressed && right.pressed) move.x = 1.0f;
-		if (down.pressed && !up.pressed) move.y =-1.0f;
-		if (!down.pressed && up.pressed) move.y = 1.0f;
+		if (!wrong_pos){
+			constexpr float PlayerSpeed = 3.0f;
+			glm::vec3 move = glm::vec3(0.0f);
+			if (left.pressed && !right.pressed) move.x =-1.0f;
+			if (!left.pressed && right.pressed) move.x = 1.0f;
+			if (down.pressed && !up.pressed) move.y =-1.0f;
+			if (!down.pressed && up.pressed) move.y = 1.0f;
 
-		if (move != glm::vec3(0.0f)) {
-			player->rotation = glm::quatLookAt(-glm::normalize(move), glm::vec3(0, 0, 1));
-			move = glm::normalize(move) * PlayerSpeed * elapsed;
-			player->position += move;
-			camera->transform->position += move;
+			if (move != glm::vec3(0.0f)) {
+				player->rotation = glm::quatLookAt(-glm::normalize(move), glm::vec3(0, 0, 1));
+				move = glm::normalize(move) * PlayerSpeed * elapsed;
+				player->position += move;
+				camera->transform->position += move;
+			}
 		}
-
+		
 		check_player_pos(player->position.x, player->position.y);
+
 		if (player_pos_2d == target_position) {
+			player_pos_last = target_position;
 			target_position = path.front();
 			path.pop_front();
 			target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE, 0);
 			target_loop->set_position(target->position);
 		}
-		//make it so that moving diagonally doesn't go faster:
-
-		/*
-		glm::mat4x3 frame = camera->transform->make_local_to_parent();
-		glm::vec3 right = frame[0];
-		//glm::vec3 up = frame[1];
-		glm::vec3 forward = -frame[2];
-
-		camera->transform->position += move.x * right + move.y * forward;*/
+		
+		if (player_pos_2d != player_pos_last){
+			//went wrong direction
+			wrong_timer += elapsed;
+			std::cout<<"wrong timer "<<wrong_timer<<std::endl;
+			if (wrong_timer > 3.5){
+				//reset game
+				randomize_grid();
+				glm::ivec2 initial_player_pos = path.front();
+				path.pop_front();
+				player->position.x = initial_player_pos.x * UNIT_SIZE;
+				player->position.y = initial_player_pos.y * UNIT_SIZE;
+				player->position.z = 0.0f;
+				check_player_pos(player->position.x, player->position.y);
+				player_pos_last = player_pos_2d;
+				camera->transform->position.x = camera_origin_pos.x+initial_player_pos.x * UNIT_SIZE;
+				camera->transform->position.y = camera_origin_pos.y+initial_player_pos.y * UNIT_SIZE;
+				target_position = path.front();
+				path.pop_front();
+				target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE, 0);
+				wrong_cube->position.z = -1.0f;
+				wrong_pos = false;
+				wrong_timer = 0.0f;
+			}else if (wrong_timer > 2){
+				//falling down
+				constexpr float FallSpeed = 1.0f;
+				wrong_pos = true;
+				wrong_cube = cube_vec[player_pos];
+				wrong_cube->position += FallSpeed*glm::vec3(0.0f, 0.0f, -1.0f)*elapsed;
+				player->position += FallSpeed*glm::vec3(0.0f, 0.0f, -1.0f)*elapsed;
+			}
+		}else{
+			wrong_pos = false;
+			wrong_timer = 0.0f;
+		}
 	}
 
 	/*{ //update listener to camera position:
