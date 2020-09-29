@@ -195,17 +195,16 @@ void PlayMode::update(float elapsed) {
 			target_loop->set_position(target->position);
 		}
 		
-		if (player_pos_2d != player_pos_last){
+		if (grid[player_pos_2d.x][player_pos_2d.y] == 0){
 			//went wrong direction
 			wrong_timer += elapsed;
-			std::cout<<"wrong timer "<<wrong_timer<<std::endl;
 			if (wrong_timer > 3.5){
 				//reset game
 				randomize_grid();
 				glm::ivec2 initial_player_pos = path.front();
 				path.pop_front();
-				player->position.x = initial_player_pos.x * UNIT_SIZE;
-				player->position.y = initial_player_pos.y * UNIT_SIZE;
+				player->position.x = (float)initial_player_pos.x * UNIT_SIZE;
+				player->position.y = (float)initial_player_pos.y * UNIT_SIZE;
 				player->position.z = 0.0f;
 				check_player_pos(player->position.x, player->position.y);
 				player_pos_last = player_pos_2d;
@@ -219,7 +218,7 @@ void PlayMode::update(float elapsed) {
 				wrong_timer = 0.0f;
 			}else if (wrong_timer > 2){
 				//falling down
-				constexpr float FallSpeed = 1.0f;
+				float FallSpeed = 9.8f*(wrong_timer-2.0f);
 				wrong_pos = true;
 				wrong_cube = cube_vec[player_pos];
 				wrong_cube->position += FallSpeed*glm::vec3(0.0f, 0.0f, -1.0f)*elapsed;
