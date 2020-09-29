@@ -82,6 +82,8 @@ PlayMode::PlayMode() : scene(*game_scene) {
 	//start music loop playing:
 	// (note: position will be over-ridden in update())
 	target_position = path.front();
+	target->rotation = glm::quatLookAt(-glm::normalize(glm::vec3(-1,-1,0)), glm::vec3(0, 0, 1));
+
 	path.pop_front();
 	target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE, 0);
 	target_loop = Sound::loop_3D(*organ_filler_sample, 1.0f, target->position, 1.0f);
@@ -157,10 +159,10 @@ void PlayMode::update(float elapsed) {
 		if (!stop_move){
 			constexpr float PlayerSpeed = 3.0f;
 			glm::vec3 move = glm::vec3(0.0f);
-			if (left.pressed && !right.pressed) move.x =-1.0f;
-			if (!left.pressed && right.pressed) move.x = 1.0f;
-			if (down.pressed && !up.pressed) move.y =-1.0f;
-			if (!down.pressed && up.pressed) move.y = 1.0f;
+			if (left.pressed && !right.pressed && player->position.x > -0.8f) move.x =-1.0f;
+			if (!left.pressed && right.pressed && player->position.x < float(GRID_SIZE * UNIT_SIZE)-1.4df) move.x = 1.0f;
+			if (down.pressed && !up.pressed && player->position.y > -0.8f) move.y =-1.0f;
+			if (!down.pressed && up.pressed && player->position.y < float(GRID_SIZE * UNIT_SIZE)-1.4f) move.y = 1.0f;
 
 			if (move != glm::vec3(0.0f)) {
 				player->rotation = glm::quatLookAt(-glm::normalize(move), glm::vec3(0, 0, 1));
@@ -175,8 +177,10 @@ void PlayMode::update(float elapsed) {
 		if (player_pos_2d == target_position) {
 			if (path.size() == 0){
 				ending_timer += elapsed;
-				stop_move = true;
-				if (ending_timer > 2){
+				if(glm::length(player->position - target->position) < 0.6f)
+					stop_move = true;
+				play_victory_effect();
+				if (ending_timer > 3){
 					reset_game(false);
 				}
 			}else{
@@ -197,14 +201,13 @@ void PlayMode::update(float elapsed) {
 			}else if (wrong_timer > grace_time){
 				//falling down
 				play_death_effect();
-				float FallSpeed = 9.8f*(wrong_timer-2.0f);
+				float FallSpeed = 9.8f*(wrong_timer-grace_time);
 				stop_move = true;
 				wrong_cube = cube_vec[player_pos];
 				wrong_cube->position += FallSpeed*glm::vec3(0.0f, 0.0f, -1.0f)*elapsed;
 				player->position += FallSpeed*glm::vec3(0.0f, 0.0f, -1.0f)*elapsed;
 			}
 		}else{
-			stop_move = false;
 			wrong_timer = 0.0f;
 		}
 	}
@@ -235,6 +238,8 @@ void PlayMode::reset_game(bool ending){
 	target_position = path.front();
 	path.pop_front();
 	target->position = glm::vec3(target_position.x * UNIT_SIZE, target_position.y * UNIT_SIZE, 0);
+	target_loop = Sound::loop_3D(*organ_filler_sample, 1.0f, target->position, 1.0f);
+
 	if(ending){
 		wrong_cube->position.z = -1.0f;
 		stop_move = false;
@@ -255,19 +260,19 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	//set up light type and position for lit_color_texture_program:
 	// TODO: consider using the Light(s) in the scene to do this
 
-	/*glUseProgram(lit_color_texture_program->program);
-	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 2);
-	glUniform3fv(lit_color_texture_program->LIGHT_LOCATION_vec3, 1, glm::value_ptr(player->position + (glm::vec3(0.0f,0.0f, 10.f))));
-	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f, -1.0f)));
-	glUniform1f(lit_color_texture_program->LIGHT_CUTOFF_float, std::cos(3.1415926f * 0.025f));
-	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(50.0f * glm::vec3(1.0f, 1.0f, 0.95f)));
-	glUseProgram(0);*/
-	
 	glUseProgram(lit_color_texture_program->program);
+	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 2);
+	glUniform3fv(lit_color_texture_program->LIGHT_LOCATION_vec3, 1, glm::value_ptr(player->position + (glm::vec3(0.0f, 0.0f, 1.25f))));
+	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f, -1.0f)));
+	glUniform1f(lit_color_texture_program->LIGHT_CUTOFF_float, std::cos(3.1415926f * 0.18f));
+	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(1.0f * glm::vec3(1.0f, 1.0f, 0.7f)));
+	glUseProgram(0);
+	
+	/*glUseProgram(lit_color_texture_program->program);
 	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
 	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
 	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
-	glUseProgram(0);
+	glUseProgram(0);*/
 
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
