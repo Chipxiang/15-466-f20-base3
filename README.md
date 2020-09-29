@@ -20,3 +20,5 @@ for icecream model: https://kenney.nl/assets/food-kit
 
 This game was built with [NEST](NEST.md).
 
+Sound effect
+https://freesound.org/people/FritzSounds/sounds/435062/

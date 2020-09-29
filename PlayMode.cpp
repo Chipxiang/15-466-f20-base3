@@ -39,14 +39,18 @@ Load< Scene > game_scene(LoadTagDefault, []() -> Scene const * {
 Load< Sound::Sample > organ_filler_sample(LoadTagDefault, []() -> Sound::Sample const * {
 	return new Sound::Sample(data_path("Organ-Filler.opus"));
 });
-
+Load< Sound::Sample > maybe_next_time_sample(LoadTagDefault, []() -> Sound::Sample const* {
+	return new Sound::Sample(data_path("maybe_next_time.opus"));
+	});
+Load< Sound::Sample > nice_one_sample(LoadTagDefault, []() -> Sound::Sample const* {
+	return new Sound::Sample(data_path("nice_one.opus"));
+	});
 PlayMode::PlayMode() : scene(*game_scene) {
 	//get pointers to player for convenience:
 	std::string cube_prefix = "Cube";
 	for (auto &transform : scene.transforms) {
 		if (transform.name == "player") player = &transform;
 		else if (transform.name.find(cube_prefix) == 0){
-			std::cout<<"find cube "<<transform.name<<std::endl;
 			cube_vec.push_back(&transform);
 		}
 		else if (transform.name == "target"){
@@ -192,6 +196,7 @@ void PlayMode::update(float elapsed) {
 				reset_game(true);
 			}else if (wrong_timer > grace_time){
 				//falling down
+				play_death_effect();
 				float FallSpeed = 9.8f*(wrong_timer-2.0f);
 				stop_move = true;
 				wrong_cube = cube_vec[player_pos];
@@ -352,4 +357,16 @@ void PlayMode::randomize_grid()
 	end = curr_y;
 
 
+}
+void PlayMode::play_death_effect() {
+	if (!target_loop->stopped) {
+		target_loop->stop();
+		Sound::play(*maybe_next_time_sample, 1.0f, 0.0f);
+	}
+}
+void PlayMode::play_victory_effect() {
+	if (!target_loop->stopped) {
+		target_loop->stop();
+		Sound::play(*nice_one_sample, 1.0f, 0.0f);
+	}
 }

@@ -62,9 +62,10 @@ struct PlayMode : Mode {
 	glm::vec3 get_leg_tip_position();
 	void randomize_grid();
 	std::deque<glm::ivec2> path;
-	//music coming from the target:
+	//sound
 	std::shared_ptr< Sound::PlayingSample > target_loop;
-	
+	void play_death_effect();
+	void play_victory_effect();
 	//camera:
 	Scene::Camera *camera = nullptr;
 	glm::vec3 camera_origin_pos = glm::vec3(0.0f,0.0f,0.0f);
