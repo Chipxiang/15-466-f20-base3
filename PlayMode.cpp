@@ -160,7 +160,7 @@ void PlayMode::update(float elapsed) {
 			constexpr float PlayerSpeed = 3.0f;
 			glm::vec3 move = glm::vec3(0.0f);
 			if (left.pressed && !right.pressed && player->position.x > -0.8f) move.x =-1.0f;
-			if (!left.pressed && right.pressed && player->position.x < float(GRID_SIZE * UNIT_SIZE)-1.4df) move.x = 1.0f;
+			if (!left.pressed && right.pressed && player->position.x < float(GRID_SIZE * UNIT_SIZE)-1.4f) move.x = 1.0f;
 			if (down.pressed && !up.pressed && player->position.y > -0.8f) move.y =-1.0f;
 			if (!down.pressed && up.pressed && player->position.y < float(GRID_SIZE * UNIT_SIZE)-1.4f) move.y = 1.0f;
 
