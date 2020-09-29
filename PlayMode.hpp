@@ -58,6 +58,10 @@ struct PlayMode : Mode {
 	int score = 0;
 	float ending_timer = 0.0f;
 
+	float cutoff = 0.18f;
+	float energy = 1.0f;
+	float color = 0.7f;
+	float height = 1.25f;
 	glm::ivec2 target_position;
 	glm::vec3 get_leg_tip_position();
 	void randomize_grid();

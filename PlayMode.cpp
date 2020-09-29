@@ -149,9 +149,6 @@ void PlayMode::check_player_pos(float x, float y){
 
 void PlayMode::update(float elapsed) {
 
-	// //move sound to follow leg tip position:
-	// leg_tip_loop->set_position(get_leg_tip_position(), 1.0f / 60.0f);
-
 	//move camera:
 	{
 
@@ -175,11 +172,19 @@ void PlayMode::update(float elapsed) {
 		check_player_pos(player->position.x, player->position.y);
 
 		if (player_pos_2d == target_position) {
+		
 			if (path.size() == 0){
 				ending_timer += elapsed;
 				if(glm::length(player->position - target->position) < 0.6f)
 					stop_move = true;
 				play_victory_effect();
+				if(height < 4.0f)
+					height += elapsed * 5;
+				if(energy < 15.0f)
+					energy *= 1.1f;
+				cutoff += elapsed / 4;
+				if(color < 0.9f)
+					color += elapsed / 4;
 				if (ending_timer > 3){
 					reset_game(false);
 				}
@@ -226,6 +231,10 @@ void PlayMode::update(float elapsed) {
 }
 
 void PlayMode::reset_game(bool ending){
+	cutoff = 0.18f;
+	energy = 1.0f;
+	color = 0.7f;
+	height = 1.25f;
 	randomize_grid();
 	glm::ivec2 initial_player_pos = path.front();
 	path.pop_front();
@@ -262,10 +271,10 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	glUseProgram(lit_color_texture_program->program);
 	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 2);
-	glUniform3fv(lit_color_texture_program->LIGHT_LOCATION_vec3, 1, glm::value_ptr(player->position + (glm::vec3(0.0f, 0.0f, 1.25f))));
+	glUniform3fv(lit_color_texture_program->LIGHT_LOCATION_vec3, 1, glm::value_ptr(player->position + (glm::vec3(0.0f, 0.0f, height))));
 	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f, -1.0f)));
-	glUniform1f(lit_color_texture_program->LIGHT_CUTOFF_float, std::cos(3.1415926f * 0.18f));
-	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(1.0f * glm::vec3(1.0f, 1.0f, 0.7f)));
+	glUniform1f(lit_color_texture_program->LIGHT_CUTOFF_float, std::cos(3.1415926f * cutoff));
+	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(energy * glm::vec3(1.0f, 1.0f, color)));
 	glUseProgram(0);
 	
 	/*glUseProgram(lit_color_texture_program->program);
