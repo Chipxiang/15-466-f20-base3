@@ -1,8 +1,9 @@
-# (TODO: your game's title)
+Dangerous Midnight Treat
 
-Author: (TODO: your name)
+Author: Jianxiang Li, Zizhuo Lin
 
-Design: (TODO: In two sentences or fewer, describe what is new and interesting about your game.)
+Design: 
+Use the direction of sound in the darkness to guide moving. Randomized path every game.
 
 Screen Shot:
 
@@ -10,9 +11,12 @@ Screen Shot:
 
 How To Play:
 
-(TODO: describe the controls and (if needed) goals/strategy.)
+Move with WASD. Follow the direction of sound. Move in wrong direction might fall.
 
-Sources: (TODO: list a source URL for any assets you did not create yourself. Make sure you have a license for the asset.)
+Sources:
+
+Credit for car models: https://kenney.nl/assets/car-kit
+for icecream model: https://kenney.nl/assets/food-kit
 
 This game was built with [NEST](NEST.md).
 
